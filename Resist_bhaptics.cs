@@ -160,7 +160,7 @@ namespace Resist_bhaptics
             }
         }
 
-
+        /*
         [HarmonyPatch(typeof(PlayerCollision), "OnMovementHit")]
         public class bhaptics_PlayerCollision
         {
@@ -170,7 +170,7 @@ namespace Resist_bhaptics
                 tactsuitVr.PlaybackHaptics("Impact");
             }
         }
-
+        
         [HarmonyPatch(typeof(PlayerCollision), "OnGroundHit")]
         public class bhaptics_PlayerGroundHit
         {
@@ -180,6 +180,37 @@ namespace Resist_bhaptics
                 tactsuitVr.PlaybackHaptics("Land");
             }
         }
+        */
+        [HarmonyPatch(typeof(PlayerAudio), "Jump", new Type[] { })]
+        public class bhaptics_PlayerJump
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                tactsuitVr.PlaybackHaptics("Jump");
+            }
+        }
 
+        [HarmonyPatch(typeof(PlayerAudio), "Land", new Type[] { })]
+        public class bhaptics_PlayerLand
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                tactsuitVr.PlaybackHaptics("Land");
+            }
+        }
+
+        [HarmonyPatch(typeof(PlayerAudio), "PlayJetpackIdle", new Type[] { typeof(bool) })]
+        public class bhaptics_PlayerAirBoost
+        {
+            [HarmonyPostfix]
+            public static void Postfix(bool on)
+            {
+                if (!on) return;
+                tactsuitVr.PlaybackHaptics("Jetpack");
+            }
+        }
+        
     }
 }
