@@ -177,7 +177,7 @@ namespace Resist_bhaptics
             [HarmonyPostfix]
             public static void Postfix()
             {
-                tactsuitVr.PlaybackHaptics("FallDamage");
+                tactsuitVr.PlaybackHaptics("Land");
             }
         }
 
