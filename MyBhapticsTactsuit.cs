@@ -19,7 +19,8 @@ namespace MyBhapticsTactsuit
         public bool systemInitialized = false;
         // Event to start and stop the heartbeat thread
         private static ManualResetEvent HeartBeat_mrse = new ManualResetEvent(false);
-        private static ManualResetEvent SlowHeartBeat_mrse = new ManualResetEvent(false);
+        private static ManualResetEvent SwingR_mrse = new ManualResetEvent(false);
+        private static ManualResetEvent SwingL_mrse = new ManualResetEvent(false);
         // dictionary of all feedback patterns found in the bHaptics directory
         public Dictionary<String, FileInfo> FeedbackMap = new Dictionary<String, FileInfo>();
 
@@ -35,13 +36,26 @@ namespace MyBhapticsTactsuit
                 Thread.Sleep(600);
             }
         }
-        public void SlowHeartBeatFunc()
+        public void SwingRFunc()
         {
             while (true)
             {
                 // Check if reset event is active
-                SlowHeartBeat_mrse.WaitOne();
-                bHapticsLib.bHapticsManager.PlayRegistered("HeartBeatSlow");
+                SwingR_mrse.WaitOne();
+                bHapticsLib.bHapticsManager.PlayRegistered("SwingVest_R");
+                bHapticsLib.bHapticsManager.PlayRegistered("SwingArms_R");
+                Thread.Sleep(1000);
+            }
+        }
+
+        public void SwingLFunc()
+        {
+            while (true)
+            {
+                // Check if reset event is active
+                SwingL_mrse.WaitOne();
+                bHapticsLib.bHapticsManager.PlayRegistered("SwingVest_L");
+                bHapticsLib.bHapticsManager.PlayRegistered("SwingArms_L");
                 Thread.Sleep(1000);
             }
         }
@@ -57,8 +71,10 @@ namespace MyBhapticsTactsuit
             LOG("Starting HeartBeat thread...");
             Thread HeartBeatThread = new Thread(HeartBeatFunc);
             HeartBeatThread.Start();
-            Thread SlowHeartBeatThread = new Thread(SlowHeartBeatFunc);
-            SlowHeartBeatThread.Start();
+            Thread SwingRThread = new Thread(SwingRFunc);
+            SwingRThread.Start();
+            Thread SwingLThread = new Thread(SwingLFunc);
+            SwingLThread.Start();
         }
 
         public void LOG(string logStr)
@@ -134,7 +150,7 @@ namespace MyBhapticsTactsuit
             PlaybackHaptics(keyWand);
         }
 
-        public void CastSpell(string spellName, bool isRightHand, float intensity = 1.0f)
+        public void Recoil(bool isRightHand, float intensity = 1.0f)
         {
             float duration = 1.0f;
             var scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
@@ -142,26 +158,10 @@ namespace MyBhapticsTactsuit
             string postfix = "_L";
             if (isRightHand) { postfix = "_R"; }
 
-            string keyHand = "Spell" + spellName + "Hand" + postfix;
-            string keyArm = "Spell" + spellName + "Arm" + postfix;
-            string keyVest = "Spell" + spellName + "Vest" + postfix;
-            bHapticsLib.bHapticsManager.PlayRegistered(keyHand, keyHand, scaleOption, rotationFront);
+            string keyArm = "RecoilArms" + postfix;
+            string keyVest = "RecoilVest" + postfix;
             bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
             bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
-        }
-
-        public void HeadShot(String key, float hitAngle)
-        {
-            // I made 4 patterns in the Tactal for fron/back/left/right headshots
-            if (bHapticsLib.bHapticsManager.IsDeviceConnected(bHapticsLib.PositionID.Head))
-            {
-                if ((hitAngle < 45f) | (hitAngle > 315f)) { PlaybackHaptics("Headshot_F"); }
-                if ((hitAngle > 45f) && (hitAngle < 135f)) { PlaybackHaptics("Headshot_L"); }
-                if ((hitAngle > 135f) && (hitAngle < 225f)) { PlaybackHaptics("Headshot_B"); }
-                if ((hitAngle > 225f) && (hitAngle < 315f)) { PlaybackHaptics("Headshot_R"); }
-            }
-            // If there is no Tactal, just forward to the vest  with angle and at the very top (0.5)
-            else { PlayBackHit(key, hitAngle, 0.5f); }
         }
 
         public void Block(bool isRight, float intensity = 1.0f)
@@ -173,8 +173,6 @@ namespace MyBhapticsTactsuit
             if (isRight) postFix = "_R";
             string keyVest = "BlockVest" + postFix;
             string keyArm = "BlockArm" + postFix;
-            string keyHand = "BlockHand" + postFix;
-            bHapticsLib.bHapticsManager.PlayRegistered(keyHand, keyHand, scaleOption, rotationFront);
             bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
             bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
         }
@@ -188,14 +186,26 @@ namespace MyBhapticsTactsuit
         {
             HeartBeat_mrse.Reset();
         }
-        public void StartHeartBeatSlow()
+        public void StartSwinging(bool isRightHand)
         {
-            SlowHeartBeat_mrse.Set();
+            if (isRightHand) SwingR_mrse.Set();
+            else SwingL_mrse.Set();
         }
 
-        public void StopHeartBeatSlow()
+        public void StopSwinging(bool isRightHand)
         {
-            SlowHeartBeat_mrse.Reset();
+            if (isRightHand)
+            {
+                SwingR_mrse.Reset();
+                StopHapticFeedback("SwingVest_R");
+                StopHapticFeedback("SwingArms_R");
+            }
+            else
+            {
+                SwingL_mrse.Reset();
+                StopHapticFeedback("SwingVest_L");
+                StopHapticFeedback("SwingArms_L");
+            }
         }
 
         public bool IsPlaying(String effect)
