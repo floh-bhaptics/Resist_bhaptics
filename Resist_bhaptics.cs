@@ -7,6 +7,8 @@ using UnityEngine;
 using MelonLoader;
 using HarmonyLib;
 using MyBhapticsTactsuit;
+using Il2Cpp;
+
 
 namespace Resist_bhaptics
 {
