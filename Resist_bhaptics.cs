@@ -9,7 +9,7 @@ using HarmonyLib;
 using MyBhapticsTactsuit;
 using Il2Cpp;
 
-[assembly: MelonInfo(typeof(Resist_bhaptics.Resist_bhaptics), "Resist_bhaptics", "1.0.0", "Florian Fahrenberger")]
+[assembly: MelonInfo(typeof(Resist_bhaptics.Resist_bhaptics), "Resist_bhaptics", "2.0.0", "Florian Fahrenberger")]
 [assembly: MelonGame("The Binary Mill", "Resist")]
 
 namespace Resist_bhaptics
